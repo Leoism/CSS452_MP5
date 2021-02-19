@@ -9,7 +9,9 @@
 "use strict";  // Operate in Strict mode such that variables must be declared before used!
 
 // Constructor
-function Scene() {}
+function Scene() {
+    this.kSprite = "assets/SpriteSheet.png";
+}
 
 //<editor-fold desc="functions subclass should override">
 
@@ -19,6 +21,7 @@ function Scene() {}
 // The game loop will call initialize and then update/draw
 Scene.prototype.loadScene = function () {
     // override to load scene specific contents
+    gEngine.Textures.loadTexture(this.kSprite);
 };
 
 // Performs all initialization functions
@@ -33,11 +36,17 @@ Scene.prototype.update = function () {
     // GameLoop.stop() ==> which will call this.unloadScene();
 };
 
+// draw function for the cam. Called from draw()
+Scene.prototype.drawCam = function (cam) {
+    
+};
+
 // draw function to be called from EngineCore.GameLoop
 Scene.prototype.draw = function () {};
 
 // Must unload all resources
 Scene.prototype.unloadScene = function () {
     // .. unload all resources
+    gEngine.Textures.unloadTexture(this.kSprite);
 };
 //</editor-fold>
