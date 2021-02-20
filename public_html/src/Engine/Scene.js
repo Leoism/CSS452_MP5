@@ -16,6 +16,8 @@ function Scene() {
     // Cameras:
     this.mMainCam = null;
     
+    // Array that stores the created DyePack
+    this.mDyePackArr = [];
 }
 
 //<editor-fold desc="functions subclass should override">
@@ -44,6 +46,19 @@ Scene.prototype.initialize = function () {
     
 };
 
+// Slow down all DyePack
+Scene.prototype.slowDownDyePack = function () {
+    if (this.mDyePackArr <= 0) {
+        return;
+    }
+    
+    // Traverse the DyePack array
+    for (var i = 0; i < this.mDyePackArr.length; i++) {
+        // Slow down each DyePack in the array
+        this.mDyePackArr[i].slowDown();
+    }
+};
+
 // update function to be called form EngineCore.GameLoop
 Scene.prototype.update = function () {
     // when done with this level should call:
@@ -59,9 +74,9 @@ Scene.prototype.update = function () {
         
     }
     
-    // D pressed: trigger slow down
+    // D pressed: trigger DyePack slow down
     if (gEngine.Input.isKeyPressed(gEngine.Input.keys.D)) {
-        
+        this.slowDownDyePack();
     }
     
     // S clicked: trigger a hit event for ALL DyePack currently in the world
