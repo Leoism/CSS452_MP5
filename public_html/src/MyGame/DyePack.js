@@ -6,9 +6,9 @@
 
 "use strict";
 
-function DyePack() {
+function DyePack(sprite) {
     // Reference to DyPack sprite (might not be used)
-    this.kSprite = null;
+    this.kSprite = sprite;
     
     // Texture Renderable
     this.mRenderable = null;
@@ -22,7 +22,7 @@ function DyePack() {
 
 // Pre-condition: sprite must be loaded before initializing DyePack
 // Initialize DyePack
-DyePack.prototype.initialize = function (sprite, Xpos, Ypos) {
+DyePack.prototype.initialize = function (Xpos, Ypos) {
     // Store the sprite
     this.kSprite = sprite;
     
@@ -33,6 +33,10 @@ DyePack.prototype.initialize = function (sprite, Xpos, Ypos) {
     this.mRenderable.getXform().setSize(this.mWidth, this.mHeight);
     this.mRenderable.setElementPixelPositions(500, 100, 0, 180);
     
+};
+
+DyePack.prototype.draw = function (cam) {
+    this.mRenderable.draw(cam.getVPMatrix());
 };
 
 
