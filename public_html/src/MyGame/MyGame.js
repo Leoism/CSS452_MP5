@@ -20,6 +20,7 @@ function MyGame() {
     this.mLineSet = [];
     this.mCurrentLine = null;
     this.mP1 = null;
+    this.mTestren = null;
 }
 gEngine.Core.inheritPrototype(MyGame, Scene);
 
@@ -37,6 +38,11 @@ MyGame.prototype.initialize = function () {
     this.mMsg.setColor([0, 0, 0, 1]);
     this.mMsg.getXform().setPosition(-19, -8);
     this.mMsg.setTextHeight(3);
+    
+    this.mTestren = new Renderable();
+    this.mTestren.setColor([0, 0, 0, 1]);
+    this.mTestren.getXform().setSize(50,50);
+    this.mTestren.getXform().setPosition(30,27.5);
 };
 
 // This is the draw function, make sure to setup proper drawing environment, and more
@@ -52,6 +58,7 @@ MyGame.prototype.draw = function () {
         l.draw(this.mCamera);
     }
     this.mMsg.draw(this.mCamera);   // only draw status in the main camera
+    this.mTestren.draw(this.mCamera);
 };
 
 // The Update function, updates the application state. Make sure to _NOT_ draw

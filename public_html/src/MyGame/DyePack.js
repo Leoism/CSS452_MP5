@@ -7,6 +7,10 @@ class DyePack {
     constructor(sprite) {
         // Reference to DyPack sprite (might not be used)
         this.kSprite = sprite;
+        
+        // Object State
+        this.mObjectState = null;
+        this.mObjectShake = null;
 
         // Texture Renderable
         this.mRenderable = null;
@@ -38,24 +42,60 @@ class DyePack {
         this.mRenderable.setColor([1, 1, 1, 0]);
         this.mRenderable.getXform().setPosition(xPos, yPos);
         this.mRenderable.getXform().setSize(this.mWidth, this.mHeight);
-        this.mRenderable.setElementPixelPositions(500, 100, 0, 180);
+        this.mRenderable.setElementPixelPositions(500, 600, 0, 180);
+
+        // Initialize ObjectState
+        this.mObjectState = new ObjectState(this.mRenderable.getXform().getPosition(),this.mWidth);
 
         this.mCurSpeed = this.mInitSpeed;  
     }
     
     // Slow down DyePack
     slowDown() {
-        return;
+        this.mCurSpeed -= this.mSlowDownUnit;
+    }
+    
+    // Update Shake
+    updateShake() {
+        if (this.mObjectShake !== null) {
+            if (this.mObjectShake.shakeDone()) {
+                this.mObjectShake = null;
+            }
+            else {
+                this.mObjectShake.setRefCenter(this.mRenderable.getXform().getPosition());
+                this.mObjectShake.updateShakeState();
+            }
+        }
+        this.mObjectState.updateObjectState();
     }
     
     // Hit trigger
     hitDyePack() {
-        return;
+        this.mObjectShake = new ObjectShake(this.mObjectState, 
+                                            this.mHitXAmplitude, 
+                                            this.mHitYAmplitude, 
+                                            this.mHitFrequency, 
+                                            this.mHitDuration);
     }
     
     // Return true if this.mIsTerminate is true. This DyePack need to terminate.
     getIsTerminated() {
         return this.mIsTerminate;
+    }
+    
+    // Get X position of the DyePack
+    getXPos() {
+        return this.mRenderable.getXform().getXPos();
+    }
+    
+    // Get Y position of the DyePack
+    getYPos() {
+        return this.mRenderable.getXform().getYPos();
+    }
+    
+    // Get the current speed of the DyePack
+    getSpeed() {
+        return this.mCurSpeed;
     }
     
     // Update the DyePack
@@ -73,70 +113,12 @@ class DyePack {
         xForm.incXPosBy(this.mCurSpeed * deltaTime);
 
         // If hit by a patrol's Bound
+        this.updateShake();
     }
     
     // Pre-condition: Must be a valid camera input
     // Draw the DyePack renderable
     draw(cam) {
-        this.mRenderable.draw(cam.getVPMatrix());
+        this.mRenderable.draw(cam);
     }
 }
-
-"use strict";
-
-function DyePack(sprite) {
-
-}
-
-// Pre-condition: sprite must be loaded before initializing DyePack
-// Initialize DyePack
-DyePack.prototype.initialize = function (Xpos, Ypos) {    
-    // Create the renderable
-    this.mRenderable = new SpriteRenderable(this.kSprite);
-    this.mRenderable.setColor([1, 1, 1, 0]);
-    this.mRenderable.getXform().setPosition(Xpos, Ypos);
-    this.mRenderable.getXform().setSize(this.mWidth, this.mHeight);
-    this.mRenderable.setElementPixelPositions(500, 100, 0, 180);
-    
-    this.mCurSpeed = this.mInitSpeed;   
-};
-
-// Slow DyePack
-DyePack.prototype.slowDown = function () {
-    return;
-};
-
-// Hit trigger
-DyePack.prototype.hitDyePack = function () {
-    return;
-};
-
-// Return true if this.mIsTerminate is true. This DyePack need to terminate.
-DyePack.prototype.getIsTerminate = function () {
-    return this.mIsTerminate;
-};
-
-// Update the DyePack
-DyePack.prototype.update = function () {
-    var deltaTime = gEngine.GameLoop.getElapsedTime();
-    this.mTimer += deltaTime; // add delta time
-    
-    // If the DyePack reaches it's life span, terminate the DyePack
-    if (this.mTimer >= this.mMaxLifespan) {
-        this.mIsTerminate = true;
-    }
-    
-    // Move to the right by current speed
-    var xForm = this.mRenderable.getXform();
-    xForm.incXPosBy(this.mCurSpeed * deltaTime);
-    
-    // If hit by a patrol's Bound
-};
-
-// Pre-condition: Must be a valid camera input
-// Draw the DyePack renderable
-DyePack.prototype.draw = function (cam) {
-    this.mRenderable.draw(cam.getVPMatrix());
-};
-
-
