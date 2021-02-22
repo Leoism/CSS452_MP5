@@ -25,7 +25,7 @@ class DyePack {
         this.mHitFrequency = 20;    // hit frequency
         this.mHitDuration = 300;    // hit duration
         this.mMaxLifespan = 5;      // Max lifespan seconds
-        this.mIsTerminate = false;  // Does the DyePack need to be terminated?
+        this.mIsTerminated = false;  // Does the DyePack need to be terminated?
 
         // Timer for Lifespan
         this.mTimer = 0;
@@ -80,7 +80,7 @@ class DyePack {
     
     // Return true if this.mIsTerminate is true. This DyePack need to terminate.
     getIsTerminated() {
-        return this.mIsTerminate;
+        return this.mIsTerminated;
     }
     
     // Get X position of the DyePack
@@ -105,7 +105,7 @@ class DyePack {
 
         // If the DyePack reaches it's life span, terminate the DyePack
         if (this.mTimer >= this.mMaxLifespan) {
-            this.mIsTerminate = true;
+            this.mIsTerminated = true;
         }
 
         // Move to the right by current speed
