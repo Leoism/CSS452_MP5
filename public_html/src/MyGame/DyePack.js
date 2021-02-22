@@ -52,7 +52,7 @@ class DyePack {
     
     // Slow down DyePack
     slowDown() {
-        this.mCurSpeed -= this.mSlowDownUnit;
+        this.mCurSpeed *= (1-this.mSlowDownUnit);
     }
     
     // Update Shake

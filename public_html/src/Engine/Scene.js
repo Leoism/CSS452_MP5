@@ -12,12 +12,18 @@
 function Scene() {
     // Sprite Sheet
     this.kSprite = "assets/SpriteSheet.png";
+    // Font
+    this.kFont = "assets/fonts/Consolas-24";
     
     // Cameras:
     this.mMainCam = null;
     
+    // Status:
+    this.mStatus = null;
+    
     // Array that stores the created DyePack
     this.mDyePackArr = []; 
+    this.mNumDyePack = 0;
 }
 
 //<editor-fold desc="functions subclass should override">
@@ -29,6 +35,13 @@ function Scene() {
 Scene.prototype.loadScene = function () {
     // override to load scene specific contents
     gEngine.Textures.loadTexture(this.kSprite);
+    gEngine.Fonts.loadFont(this.kFont);
+};
+
+Scene.prototype._initText = function (font, posX, posY, color, textH) {
+    font.setColor(color);
+    font.getXform().setPosition(posX, posY);
+    font.setTextHeight(textH);
 };
 
 // Performs all initialization functions
@@ -38,11 +51,15 @@ Scene.prototype.initialize = function () {
     // Step A: set up the cameras
     this.mMainCam = new Camera(
         vec2.fromValues(100, 75), // position of the camera
-        100,                       // width of camera
+        200,                       // width of camera
         [0, 0, 800, 600]           // viewport (orgX, orgY, width, height)
     );
     this.mMainCam.setBackgroundColor([0.8, 0.8, 0.8, 1]);
             // sets the background to gray
+            
+    this.mStatus = new FontRenderable("Status: Number of DyePack:");
+    this.mStatus.setFont(this.kFont);
+    this._initText(this.mStatus, 2, 5, [0, 0, 0, 1], 4);
 };
 
 // Slow down all DyePack
@@ -77,6 +94,8 @@ Scene.prototype.hitDyePack = function () {
 
 // Call Update function on all DyePack
 Scene.prototype.updateDyePacks = function () {
+    var status = "Status: number of DyePack = " + this.mNumDyePack;
+    this.mStatus.setText(status);
     if (this.mDyePackArr.length <= 0) {
         return;
     }
@@ -88,33 +107,19 @@ Scene.prototype.updateDyePacks = function () {
     }
 };
 
-// Terminate the DyePack if it reaches outside the bound
-Scene.prototype.checkBound = function () {
+// Terminate the DyePack if it's speed reaches 0 or reache outside the bound
+Scene.prototype.checkDyePackTermination = function () {
     if (this.mDyePackArr.length <= 0) {
         return;
     }
     
-    for (var i = 0; i < this.mDyePackArr.length; i++) {
-        if (this.mDyePackArr[i] !== null) {
-            var boundX = this.mMainCam.getWCCenter()[0] + this.mMainCam.getWCWidth()/2;
-            if (this.mDyePackArr[i].getXPos() >= boundX) {
-                this.mDyePackArr[i] = null;
-            }
-        }
-    }
-};
-
-// Terminate the DyePack if it's speed reaches 0
-Scene.prototype.checkDyePackSpeed = function () {
-    if (this.mDyePackArr.length <= 0) {
-        return;
-    }
-    
+    var boundX = this.mMainCam.getWCCenter()[0] + this.mMainCam.getWCWidth()/2;
     for (var i = 0; i < this.mDyePackArr.length; i++) {
         if (this.mDyePackArr[i] !== null) {
             var currentSpeed = this.mDyePackArr[i].getSpeed();
-            if (currentSpeed <= 0) {
+            if (currentSpeed <= 0.1 || this.mDyePackArr[i].getXPos() >= boundX) {
                 this.mDyePackArr[i] = null;
+                this.mNumDyePack--;
             }
         }
     }
@@ -132,6 +137,7 @@ Scene.prototype.update = function () {
         var dyePack = new DyePack(this.kSprite);
         dyePack.initialize(x,y);
         this.mDyePackArr.push(dyePack);
+        this.mNumDyePack++;
     }
     
     // Q clicked: trigger a Hero hit event
@@ -171,12 +177,9 @@ Scene.prototype.update = function () {
     
     // Update all DyePack
     this.updateDyePacks();
-    
-    // Check if any DyePack is outside the bound
-    this.checkBound();
-    
+
     // Check if the DyePack's speed is less than 0
-    this.checkDyePackSpeed();
+    this.checkDyePackTermination();
 };
 
 Scene.prototype.drawDyePack = function (cam) {
@@ -197,6 +200,7 @@ Scene.prototype.draw = function () {
     gEngine.Core.clearCanvas([0.9, 0.9, 0.9, 1.0]); // clear to light gray
     
     this.mMainCam.setupViewProjection();
+    this.mStatus.draw(this.mMainCam);
     
     this.drawDyePack(this.mMainCam);
 };
@@ -205,5 +209,6 @@ Scene.prototype.draw = function () {
 Scene.prototype.unloadScene = function () {
     // .. unload all resources
     gEngine.Textures.unloadTexture(this.kSprite);
+    gEngine.Fonts.unloadFont(this.kFont);
 };
 //</editor-fold>
