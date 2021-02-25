@@ -24,8 +24,6 @@ class PatrolSet {
   draw(cam) {
     for (const patrol of this.patrols) {
       patrol.draw(cam);
-      patrol.draw(cam);
-      patrol.draw(cam);
     }
   }
 
