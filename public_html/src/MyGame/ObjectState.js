@@ -18,6 +18,9 @@ class ObjectState {
     getWidth() { return this.mWidth.getValue(); }
     setWidth(w) { this.mWidth.setFinalValue(w); }
     
+    setCycle(c) { this.kCycles = c; }
+    setRate(r) { this.kRate = r; }
+    
     updateObjectState() {
         this.mCenter.updateInterpolation();
         this.mWidth.updateInterpolation();

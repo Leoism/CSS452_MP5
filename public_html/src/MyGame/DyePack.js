@@ -9,6 +9,7 @@ class DyePack {
         this.kSprite = sprite;
         
         // Object State
+        this.mOriginalPos = null;
         this.mObjectState = null;
         this.mObjectShake = null;
 
@@ -26,6 +27,7 @@ class DyePack {
         this.mHitDuration = 300;    // hit duration
         this.mMaxLifespan = 5;      // Max lifespan seconds
         this.mIsTerminated = false;  // Does the DyePack need to be terminated?
+        this.mIsHit = false;
 
         // Timer for Lifespan
         this.mTimer = 0;
@@ -44,15 +46,12 @@ class DyePack {
         this.mRenderable.getXform().setSize(this.mWidth, this.mHeight);
         this.mRenderable.setElementPixelPositions(500, 600, 0, 180);
 
-        // Initialize ObjectState
-        this.mObjectState = new ObjectState(this.mRenderable.getXform().getPosition(),this.mWidth);
-
         this.mCurSpeed = this.mInitSpeed;  
     }
     
     // Slow down DyePack
     slowDown() {
-        this.mCurSpeed *= (1-this.mSlowDownUnit);
+        this.mCurSpeed += (this.mSlowDownUnit-this.mCurSpeed);
     }
     
     // Update Shake
@@ -60,22 +59,35 @@ class DyePack {
         if (this.mObjectShake !== null) {
             if (this.mObjectShake.shakeDone()) {
                 this.mObjectShake = null;
+                this.mObjectState= null;
+                this.mIsTerminated = true;
             }
             else {
-                this.mObjectShake.setRefCenter(this.mRenderable.getXform().getPosition());
+                this.mObjectShake.setRefCenter(this.mObjectState.getCenter());
                 this.mObjectShake.updateShakeState();
+                var center = this.mObjectShake.getCenter();
+                this.mRenderable.getXform().setPosition(center[0],center[1]);
             }
         }
-        this.mObjectState.updateObjectState();
+        if (this.mObjectState !== null) {
+            this.mObjectState.updateObjectState();
+        }
     }
     
     // Hit trigger
     hitDyePack() {
+        // Initialize ObjectState
+        var xForm = this.mRenderable.getXform();
+        var xPos = xForm.getXPos();
+        var yPos = xForm.getYPos();
+        var p = vec2.fromValues(xPos, yPos);
+        this.mObjectState = new ObjectState(p,this.mWidth);
         this.mObjectShake = new ObjectShake(this.mObjectState, 
                                             this.mHitXAmplitude, 
                                             this.mHitYAmplitude, 
                                             this.mHitFrequency, 
                                             this.mHitDuration);
+        this.mIsHit = true;
     }
     
     // Return true if this.mIsTerminate is true. This DyePack need to terminate.
@@ -104,7 +116,7 @@ class DyePack {
         this.mTimer += deltaTime; // add delta time
 
         // If the DyePack reaches it's life span, terminate the DyePack
-        if (this.mTimer >= this.mMaxLifespan) {
+        if (this.mTimer >= this.mMaxLifespan && !this.mIsHit) {
             this.mIsTerminated = true;
         }
 

@@ -18,6 +18,9 @@ function Scene() {
     // Cameras:
     this.mMainCam = null;
     
+    // Hero:
+    this.mHero = null;
+    
     // Status:
     this.mStatus = null;
     
@@ -57,72 +60,18 @@ Scene.prototype.initialize = function () {
     this.mMainCam.setBackgroundColor([0.8, 0.8, 0.8, 1]);
             // sets the background to gray
             
+    this.mHero = new Hero(this.kSprite);
+    this.mHero.initialize(100,75);
+            
     this.mStatus = new FontRenderable("Status: Number of DyePack:");
     this.mStatus.setFont(this.kFont);
     this._initText(this.mStatus, 2, 5, [0, 0, 0, 1], 4);
 };
 
-// Slow down all DyePack
-Scene.prototype.slowDownDyePack = function () {
-    if (this.mDyePackArr.length <= 0) {
-        return;
-    }
-    
-    // Traverse the DyePack array
-    for (var i = 0; i < this.mDyePackArr.length; i++) {
-        if (this.mDyePackArr[i] !== null) {
-            // Slow down each DyePack in the array
-            this.mDyePackArr[i].slowDown();
-        }
-    }
-};
-
-// Trigger hit on ALL DyePack
-Scene.prototype.hitDyePack = function () {
-    if (this.mDyePackArr.length <= 0) {
-        return;
-    }
-    
-        // Traverse the DyePack array
-    for (var i = 0; i < this.mDyePackArr.length; i++) {
-        if (this.mDyePackArr[i] !== null) {
-            // Slow down each DyePack in the array
-            this.mDyePackArr[i].hitDyePack();
-        }
-    }
-};
-
 // Call Update function on all DyePack
-Scene.prototype.updateDyePacks = function () {
-    var status = "Status: number of DyePack = " + this.mNumDyePack;
+Scene.prototype.updateStatus = function () {
+    var status = "Status: number of DyePack = " + this.mHero.getNumDyePack();
     this.mStatus.setText(status);
-    if (this.mDyePackArr.length <= 0) {
-        return;
-    }
-    
-    for (var i = 0; i < this.mDyePackArr.length; i++) {
-        if (this.mDyePackArr[i] !== null) {
-            this.mDyePackArr[i].update();
-        }
-    }
-};
-
-// Terminate the DyePack if it's speed reaches 0 or reache outside the bound
-Scene.prototype.checkDyePackTermination = function () {
-    if (this.mDyePackArr.length <= 0) {
-        return;
-    }
-    
-    var boundX = this.mMainCam.getWCCenter()[0] + this.mMainCam.getWCWidth()/2;
-    for (var i = 0; i < this.mDyePackArr.length; i++) {
-        if (this.mDyePackArr[i] !== null) {
-            var currentSpeed = this.mDyePackArr[i].getSpeed();
-            if (currentSpeed <= 0.1 || this.mDyePackArr[i].getXPos() >= boundX) {
-                this.mDyePackArr[i] = null;
-                this.mNumDyePack--;
-            }
-        }
-    }
 };
 
 // update function to be called form EngineCore.GameLoop
@@ -131,29 +80,6 @@ Scene.prototype.update = function () {
     // GameLoop.stop() ==> which will call this.unloadScene();
     var x = this.mMainCam.mouseWCX();
     var y = this.mMainCam.mouseWCY();
-    
-    // Space bar clicked: spawn a DyePack from the Hero
-    if (gEngine.Input.isKeyClicked(gEngine.Input.keys.Space)) {
-        var dyePack = new DyePack(this.kSprite);
-        dyePack.initialize(x,y);
-        this.mDyePackArr.push(dyePack);
-        this.mNumDyePack++;
-    }
-    
-    // Q clicked: trigger a Hero hit event
-    if (gEngine.Input.isKeyClicked(gEngine.Input.keys.Q)) {
-        this.hitDyePack();
-    }
-    
-    // D pressed: trigger DyePack slow down
-    if (gEngine.Input.isKeyPressed(gEngine.Input.keys.D)) {
-        this.slowDownDyePack();
-    }
-    
-    // S clicked: trigger a hit event for ALL DyePack currently in the world
-    if (gEngine.Input.isKeyClicked(gEngine.Input.keys.S)) {
-        
-    }
     
     // P clicked: toggle auto spawning
     if (gEngine.Input.isKeyClicked(gEngine.Input.keys.P)) {
@@ -175,23 +101,9 @@ Scene.prototype.update = function () {
         
     }
     
-    // Update all DyePack
-    this.updateDyePacks();
-
-    // Check if the DyePack's speed is less than 0
-    this.checkDyePackTermination();
-};
-
-Scene.prototype.drawDyePack = function (cam) {
-    if (this.mDyePackArr.length <= 0) {
-        return;
-    }
+    this.mHero.update(this.mMainCam);
     
-    for (var i = 0; i < this.mDyePackArr.length; i++) {
-        if (this.mDyePackArr[i] !== null) {
-            this.mDyePackArr[i].draw(cam);
-        }
-    }
+    this.updateStatus();
 };
 
 // draw function to be called from EngineCore.GameLoop
@@ -200,9 +112,8 @@ Scene.prototype.draw = function () {
     gEngine.Core.clearCanvas([0.9, 0.9, 0.9, 1.0]); // clear to light gray
     
     this.mMainCam.setupViewProjection();
+    this.mHero.draw(this.mMainCam);
     this.mStatus.draw(this.mMainCam);
-    
-    this.drawDyePack(this.mMainCam);
 };
 
 // Must unload all resources
