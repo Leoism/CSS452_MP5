@@ -54,6 +54,7 @@ class PatrolSet {
     for (let i = 0; i < this.patrols.length; i++) {
       if (this.patrols[i].isDead) {
         this.patrols.splice(i, 1);
+        i--; // i is outdated since length got shorter by one
       }
     }
   }
