@@ -16,6 +16,7 @@ gEngine.GameLoop = (function () {
 
     // Variables for timing gameloop.
     var mPreviousTime = Date.now();
+    var mElapsedTime = 0;
     var mLagTime;
 
 
@@ -32,9 +33,9 @@ gEngine.GameLoop = (function () {
 
             // Step B: compute how much time has elapsed since we last RunLoop was executed
             var currentTime = Date.now();
-            var elapsedTime = currentTime - mPreviousTime;
+            mElapsedTime = currentTime - mPreviousTime;
             mPreviousTime = currentTime;
-            mLagTime += elapsedTime;
+            mLagTime += mElapsedTime;
 
             // Step C: Make sure we update the game the appropriate number of times.
             //      Update only every Milliseconds per frame.
@@ -78,10 +79,15 @@ gEngine.GameLoop = (function () {
     var stop = function () {
         mIsLoopRunning = false;
     };
+    
+    var getElapsedTime = function () {
+        return ((mElapsedTime % 60000) / 1000);
+    };
 
     var mPublic = {
         start: start,
-        stop: stop
+        stop: stop,
+        getElapsedTime: getElapsedTime
     };
     return mPublic;
 }());
