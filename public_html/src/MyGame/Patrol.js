@@ -307,9 +307,19 @@ class Patrol {
 
     if (vec2.distance(twXform.getPosition(), hdXform.getPosition()) > 10) {
       twXform.setPosition(newHeadPos[0] + 10, newHeadPos[1] + 8);
+    } else {
+      twXform.setPosition(
+        twXform.getPosition()[0] + 0.078125,
+        twXform.getPosition()[1] + 0.0625
+      );
     }
     if (vec2.distance(bwXform.getPosition(), hdXform.getPosition()) > 10) {
       bwXform.setPosition(newHeadPos[0] + 10, newHeadPos[1] - 8);
+    } else {
+      bwXform.setPosition(
+        bwXform.getPosition()[0] + 0.078125,
+        bwXform.getPosition()[1] - 0.0625
+      );
     }
   }
 
