@@ -17,55 +17,71 @@ class Patrol {
     this.isDead = false;
     this.initialize();
   }
-  
+
   getHeadRenderable() {
     if (this.head !== null) {
       return this.head;
     }
     return null;
   }
-  
+
   getHeadBBox() {
     if (this.head !== null) {
       var xform = this.head.getXform();
-      var b = new BoundingBox(xform.getPosition(), xform.getWidth(), xform.getHeight());
+      var b = new BoundingBox(
+        xform.getPosition(),
+        xform.getWidth(),
+        xform.getHeight()
+      );
       return b;
     }
     return null;
   }
-  
+
   getTopWingRenderable() {
     if (this.topWing !== null) {
       return this.topWing;
     }
     return null;
   }
-  
+
   getTopWingBBox() {
     if (this.topWing !== null) {
       var xform = this.topWing.getXform();
-      var b = new BoundingBox(xform.getPosition(), xform.getWidth(), xform.getHeight());
+      var b = new BoundingBox(
+        xform.getPosition(),
+        xform.getWidth(),
+        xform.getHeight()
+      );
       return b;
     }
   }
-  
+
   getBottomWingRenderable() {
     if (this.bottomWing !== null) {
       return this.bottomWing;
     }
     return null;
   }
-  
+
   getBottomWingBBox() {
     if (this.bottomWing !== null) {
       var xform = this.bottomWing.getXform();
-      var b = new BoundingBox(xform.getPosition(), xform.getWidth(), xform.getHeight());
+      var b = new BoundingBox(
+        xform.getPosition(),
+        xform.getWidth(),
+        xform.getHeight()
+      );
       return b;
     }
   }
-  
+
   getBigBoundBBox() {
-    var b = new BoundingBox(this.bigBoundPosition, this.bigBoundWidth, this.bigBoundHeight);
+    var b = new BoundingBox(
+      this.bigBoundPosition,
+      this.bigBoundWidth,
+      this.bigBoundHeight
+    );
     return b;
   }
 
@@ -256,8 +272,8 @@ class Patrol {
       this.head.getXform().setPosition(headPos[0] + 5, headPos[1]);
     }
 
-    const wingColor = this.bottomWing.getColor();
     if (location === 'bottom') {
+      const wingColor = this.bottomWing.getColor();
       this.bottomWing.setColor([
         wingColor[0],
         wingColor[1],
@@ -267,6 +283,7 @@ class Patrol {
     }
 
     if (location === 'top') {
+      const wingColor = this.topWing.getColor();
       this.topWing.setColor([
         wingColor[0],
         wingColor[1],
@@ -346,8 +363,9 @@ class Patrol {
   }
 
   _checkHealth() {
-    const wingHealth = this.bottomWing.getColor()[3];
-    if (wingHealth >= 1) {
+    const bottomWingHealth = this.bottomWing.getColor()[3];
+    const topWingHealth = this.topWing.getColor()[3];
+    if (bottomWingHealth >= 1 || topWingHealth >= 1) {
       this.isDead = true;
       return;
     }
