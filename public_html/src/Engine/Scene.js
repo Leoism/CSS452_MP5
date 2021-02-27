@@ -393,7 +393,7 @@ Scene.prototype._checkIsHeroHitted = function () {
     var center = this.mHero.getHeroPosition();
     this.mZoomCam[0].setWCCenter(center[0], center[1]);
   } else {
-    this.mZoomCam[0].setIsVisible(false);
+    this.mZoomCam[0].setIsVisible(this.cam0Force || false);
   }
 };
 
