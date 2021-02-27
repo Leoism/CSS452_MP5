@@ -53,6 +53,22 @@ class Hero {
         return this.mNumDyePack;
     }
     
+    // Get the renderable
+    getHeroRenderable() {
+        return this.mHeroRenderable;
+    }
+    
+    // Get Hero bounding box
+    getHeroBBox() {
+        var xform = this.mHeroRenderable.getXform();
+        var b = new BoundingBox(xform.getPosition(), xform.getWidth(), xform.getHeight());
+        return b;
+    }
+    
+    getDyePacks() {
+        return this.mDyePackArr;
+    }
+    
     // Set the position of the Hero
     setHeroPosition(x,y) {
         if (this.mObjectState === null) {
@@ -65,12 +81,15 @@ class Hero {
     
     // Trigger hit on Hero
     hitHero() {
-        this.mObjectShake = new ObjectShake(this.mObjectState, 
-                                            this.mHitXAmplitude, 
-                                            this.mHitYAmplitude, 
-                                            this.mHitFrequency, 
-                                            this.mHitDuration);
-        this.mIsHeroHit = true;
+        if (!this.mIsHeroHit) {
+            this.mObjectShake = new ObjectShake(this.mObjectState, 
+                                                this.mHitXAmplitude, 
+                                                this.mHitYAmplitude, 
+                                                this.mHitFrequency, 
+                                                this.mHitDuration);
+            this.mObjectShake.setShakeCenter(vec2.fromValues(this.mObjectState.getWidth(),this.mObjectState.getWidth()))
+            this.mIsHeroHit = true;
+        }
     }
     
     // Slow down all DyePack
@@ -107,21 +126,25 @@ class Hero {
     updateHero() {
         if (this.mObjectShake !== null) {
             if (this.mObjectShake.shakeDone()) {
+                this.mObjectState.setWidth(this.mWidth);                
                 this.mObjectShake = null;
                 this.mIsHeroHit = false;
             }
             else {
-                this.mObjectShake.setRefCenter(this.mObjectState.getCenter());
+                this.mObjectShake.setRefCenter(vec2.fromValues(this.mObjectState.getWidth(),this.mObjectState.getWidth()));
                 this.mObjectShake.updateShakeState();
-                var shakeCenter = this.mObjectShake.getCenter();
-                this.mHeroRenderable.getXform().setPosition(shakeCenter[0],shakeCenter[1]);
+                var sizeRef = this.mObjectShake.getCenter();
+                var w = this.mHeroRenderable.getXform().getWidth();
+                var frac = sizeRef[0]/w;
+                this.mObjectState.setWidth(w * frac);
+                //this.mHeroRenderable.getXform().setSize(w * frac, h *frac);
             }
         }
-        if (!this.mIsHeroHit) {
-            this.mObjectState.updateObjectState();
-            var center = this.mObjectState.getCenter();
-            this.mHeroRenderable.getXform().setPosition(center[0],center[1]);
-        }
+        this.mObjectState.updateObjectState();
+        var center = this.mObjectState.getCenter();
+        var width = this.mObjectState.getWidth();
+        this.mHeroRenderable.getXform().setPosition(center[0],center[1]);
+        this.mHeroRenderable.getXform().setSize(width, (width/this.mWidth)*this.mHeight);
     }
 
     // Call Update function on all DyePack

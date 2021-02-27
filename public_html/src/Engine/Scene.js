@@ -21,6 +21,9 @@ function Scene() {
     // Hero:
     this.mHero = null;
     
+    // Patrol Set:
+    this.mPatrolSet = null;
+    
     // Status:
     this.mStatus = null;
     
@@ -59,18 +62,164 @@ Scene.prototype.initialize = function () {
     );
     this.mMainCam.setBackgroundColor([0.8, 0.8, 0.8, 1]);
             // sets the background to gray
-            
+          
+    // Hero:
     this.mHero = new Hero(this.kSprite);
     this.mHero.initialize(100,75);
+    
+    // Patrol Set:
+    this.mPatrolSet = new PatrolSet(this.kSprite);
+    this.mPatrolSet.initialize();
             
     this.mStatus = new FontRenderable("Status: Number of DyePack:");
     this.mStatus.setFont(this.kFont);
     this._initText(this.mStatus, 2, 5, [0, 0, 0, 1], 4);
 };
 
+// Check if Hero collide with any patrol's head
+Scene.prototype._checkHeroCollision = function () {
+    // Get the list of patrols
+    var patrols = this.mPatrolSet.getPatrols();
+    var heroBBox = this.mHero.getHeroBBox();
+    if (patrols.length <= 0) {
+        return;
+    }
+    
+    // Traverse the patrols
+    for (var i = 0; i < patrols.length; i++) {
+        if (patrols[i] === null) {
+            continue;
+        }
+        
+        var patrolHeadBBox = patrols[i].getHeadBBox();
+        if (heroBBox.intersectsBound(patrolHeadBBox)) {
+            this.mHero.hitHero();
+        }
+    }
+};
+
+Scene.prototype._checkDyePackBoundCollision = function (dyePack, patrol) {
+    if (dyePack === null || patrol === null) {
+        return;
+    }
+    
+    var dyePackBound = dyePack.getDyePackBBox();
+    var patrolBound = patrol.getBigBoundBBox();
+    
+    if (dyePackBound.intersectsBound(patrolBound)) {
+        dyePack.setIsSlowDown(true);
+    }
+    else {
+        dyePack.setIsSlowDown(false);
+    }        
+};
+
+// Check if the DyePack collide with head of patrol
+Scene.prototype._checkHeadPatrolCollision = function (dyePack, patrol) {
+    if (dyePack === null || patrol === null) {
+        return;
+    }
+    
+    var dyePackRen = dyePack.getRenderable();
+    var dyePackBBox= dyePack.getDyePackBBox();
+    var patrolHeadRen = patrol.getHeadRenderable();
+    var patrolHeadBBox = patrol.getHeadBBox();
+    
+    if (dyePackRen === null || dyePack.getIsHit() || patrolHeadRen === null) {
+        return;
+    }
+    
+    var coord = [];
+    if (window.pixelCollision(dyePackRen, dyePackBBox, patrolHeadRen, patrolHeadBBox, coord)) {
+        dyePack.hitDyePack();
+        patrol.hitByDyePack('head');
+    }
+};
+
+// Check if the DyePack collide with the wing of patrol
+Scene.prototype._checkWingPatrolCollision = function (dyePack, patrol) {
+    if (dyePack === null || patrol === null) {
+        return;
+    }
+    
+    var dyePackRen = dyePack.getRenderable();
+    var dyePackBBox= dyePack.getDyePackBBox();
+    var patrolTopWingRen = patrol.getTopWingRenderable();
+    var patrolTopWingBBox = patrol.getTopWingBBox();
+    var patrolBottomWingRen = patrol.getBottomWingRenderable();
+    var patrolBottomWingBBox = patrol.getBottomWingBBox();
+    
+    if (dyePackRen === null || dyePack.getIsHit()) {
+        return;
+    }
+    
+    if (patrolTopWingRen !== null) {
+        var coord = [];
+        if (window.pixelCollision(dyePackRen, dyePackBBox, patrolTopWingRen, patrolTopWingBBox, coord)) {
+            dyePack.hitDyePack();
+            patrol.hitByDyePack('top');
+        }
+    }
+    
+    if (patrolBottomWingRen !== null) {
+        var coord = [];
+        if (window.pixelCollision(dyePackRen, dyePackBBox, patrolBottomWingRen, patrolBottomWingBBox, coord)) {
+            dyePack.hitDyePack();
+            patrol.hitByDyePack('bottom');
+        }
+    }
+};
+
+// Check if any DyePack collide with the bound of the patrols
+Scene.prototype._checkDyePackCollision = function () {
+    // get the list of DyePack
+    var dyePacks = this.mHero.getDyePacks();
+    var patrols = this.mPatrolSet.getPatrols();
+    
+    if (dyePacks <= 0) {
+        return;
+    }
+    
+    // Traverse the dyePacks
+    for (var i = 0; i < dyePacks.length; i++) {
+        if (dyePacks[i] === null) {
+            continue;
+        }
+        
+        // Traverse the patrols
+        for (var j = 0; j < patrols.length; j++) {
+            if (patrols[j] === null) {
+                continue;
+            }
+            
+            // Case 2A: Check if the DyePack encounter the bound of patrol
+            this._checkDyePackBoundCollision(dyePacks[i], patrols[j]);
+            
+            // Case 2B: Check if the DyePack pixel collide with the head of the patrol
+            this._checkHeadPatrolCollision(dyePacks[i], patrols[j]);
+            
+            // Case 2C: CHeck if the DyePack pixel collide with the top and/or bottom wing of the patrol
+            this._checkWingPatrolCollision(dyePacks[i], patrols[j]);
+        }
+    }
+};
+
+// Check if any collision happens between hero, dyepack, patrol's head, topWing, and bottomWing
+Scene.prototype.checkCollision = function () {
+    // Case 1: Hero collide with the head of the patrol, Hero Hit
+    this._checkHeroCollision();
+
+    // Case 2: DyePack encounter the bound of a Patrol
+    this._checkDyePackCollision();
+    
+    // Case 3: DyePack collide with the head of the patrol
+    // Case 4: DyePack collide with the wing of the patrol
+};
+
 // Call Update function on all DyePack
 Scene.prototype.updateStatus = function () {
-    var status = "Status: number of DyePack = " + this.mHero.getNumDyePack();
+    var numPatrol = this.mPatrolSet.getPatrols().length;
+    var status = "Status: DyePack (" + this.mHero.getNumDyePack() + "), Patrol (" + numPatrol + "), AutoSpawn (" + this.mPatrolSet.getIsAutoSpawn() + ")";
     this.mStatus.setText(status);
 };
 
@@ -81,27 +230,10 @@ Scene.prototype.update = function () {
     var x = this.mMainCam.mouseWCX();
     var y = this.mMainCam.mouseWCY();
     
-    // P clicked: toggle auto spawning
-    if (gEngine.Input.isKeyClicked(gEngine.Input.keys.P)) {
-        
-    }
-    
-    // C clicked: spawns a new patrol
-    if (gEngine.Input.isKeyClicked(gEngine.Input.keys.C)) {
-        
-    }
-    
-    // B clicked: toggle the drawing of all bound for all the patrols.
-    if (gEngine.Input.isKeyClicked(gEngine.Input.keys.B)) {
-        
-    }
-    
-    // J clicked: trigger the Heda Patrol hit event for ALL patrol objects in the world
-    if (gEngine.Input.isKeyClicked(gEngine.Input.keys.J)) {
-        
-    }
-    
     this.mHero.update(this.mMainCam);
+    this.mPatrolSet.update();
+    
+    this.checkCollision();
     
     this.updateStatus();
 };
@@ -113,6 +245,7 @@ Scene.prototype.draw = function () {
     
     this.mMainCam.setupViewProjection();
     this.mHero.draw(this.mMainCam);
+    this.mPatrolSet.draw(this.mMainCam);
     this.mStatus.draw(this.mMainCam);
 };
 

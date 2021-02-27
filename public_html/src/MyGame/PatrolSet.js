@@ -7,6 +7,14 @@ class PatrolSet {
     this.patrols = [];
     this.autoSpawn = false;
   }
+  
+  getPatrols() {
+      return this.patrols;
+  }
+  
+  getIsAutoSpawn() {
+      return this.autoSpawn;
+  }
 
   initialize() {
     this._generateNewPatrol(100, 75);
