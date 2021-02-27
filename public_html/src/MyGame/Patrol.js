@@ -259,6 +259,7 @@ class Patrol {
     this.bottomWing.updateAnimation();
 
     this._isColliding();
+    this._checkHealth();
   }
 
   /**
@@ -291,6 +292,7 @@ class Patrol {
         wingColor[3] + 0.2,
       ]);
     }
+    this._checkOutOfBounds();
     this._checkHealth();
   }
 
@@ -371,10 +373,10 @@ class Patrol {
     }
 
     const isOutOfBounds =
-      this.minXPosition >= 200 ||
-      this.maxXPosition <= 0 ||
-      this.bigBoundMaxYPosition >= 150 ||
-      this.minYPosition <= 0;
+      this.minXPosition > 200 ||
+      this.maxXPosition < 0 ||
+      this.bigBoundMaxYPosition < 0 ||
+      this.minYPosition > 150;
 
     if (isOutOfBounds) {
       this.isDead = true;
@@ -382,19 +384,34 @@ class Patrol {
     }
   }
 
-  _isColliding() {
+  _checkOutOfBounds() {
     if (this.maxXPosition >= 200) {
+      this.spawnedOutside = true;
+    } else if (this.minXPosition <= 0) {
+      this.spawnedOutside = true;
+    } else if (this.bigBoundMaxYPosition >= 150) {
+      this.spawnedOutside = true;
+    } else if (this.minYPosition <= 0) {
+      this.spawnedOutside = true;
+    } else {
+      this.spawnedOutside = false;
+    }
+  }
+
+  _isColliding() {
+    if (this.maxXPosition >= 200 && !this.spawnedOutside) {
       this._reflectDirection('right');
     }
-    if (this.minXPosition <= 0) {
+    if (this.minXPosition <= 0 && !this.spawnedOutside) {
       this._reflectDirection('left');
     }
-    if (this.bigBoundMaxYPosition >= 150) {
+    if (this.bigBoundMaxYPosition >= 150 && !this.spawnedOutside) {
       this._reflectDirection('top');
     }
-    if (this.minYPosition <= 0) {
+    if (this.minYPosition <= 0 && !this.spawnedOutside) {
       this._reflectDirection('bottom');
     }
+    this._checkOutOfBounds();
   }
 
   _reflectDirection(location) {
