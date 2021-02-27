@@ -6,6 +6,7 @@ class PatrolSet {
     this.vectorDirections = {};
     this.patrols = [];
     this.autoSpawn = false;
+    this.drawBounds = true;
   }
 
   getPatrols() {
@@ -49,6 +50,7 @@ class PatrolSet {
       this.patrols.forEach((patrol) => {
         patrol.drawBounds = !patrol.drawBounds;
       });
+      this.drawBounds = !this.drawBounds;
     }
 
     if (gEngine.Input.isKeyClicked(gEngine.Input.keys.J)) {
@@ -76,7 +78,8 @@ class PatrolSet {
 
       xPos = this._randomNumber(100, 175);
     }
-    this.patrols.push(new Patrol(xPos, yPos));
+    const newPatrol = new Patrol(xPos, yPos, this.drawBounds);
+    this.patrols.push(newPatrol);
   }
 
   _determineMake() {

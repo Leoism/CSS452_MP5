@@ -1,5 +1,5 @@
 class Patrol {
-  constructor(xPos, yPos) {
+  constructor(xPos, yPos, drawBounds = true) {
     this.head = null;
     this.topWing = null;
     this.bottomWing = null;
@@ -13,7 +13,7 @@ class Patrol {
     this.bigBound = null;
 
     this.isHit = false;
-    this.drawBounds = true;
+    this.drawBounds = drawBounds;
     this.isDead = false;
     this.initialize();
   }
