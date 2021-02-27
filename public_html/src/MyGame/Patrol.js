@@ -156,6 +156,10 @@ class Patrol {
     return this.maxYPosition - this.minYPosition;
   }
 
+  get bigBoundHeight() {
+    return this.height + this.height * 0.5;
+  }
+
   get width() {
     return this.maxXPosition - this.minXPosition;
   }
@@ -196,7 +200,6 @@ class Patrol {
     );
 
     this.bigBoundWidth = this.width;
-    this.bigBoundHeight = this.height + this.height * 0.5;
   }
 
   draw(cam) {
@@ -252,7 +255,7 @@ class Patrol {
     this._updateBound(
       this.bigBound,
       [this.bigBoundPosition[0], this.bigBoundPosition[1] + this.height * 0.25],
-      this.bigBoundWidth,
+      this.width,
       this.bigBoundHeight
     );
     this.topWing.updateAnimation();
@@ -305,27 +308,23 @@ class Patrol {
     vec2.add(newHeadPos, hdXform.getPosition(), this.direction);
     hdXform.setPosition(newHeadPos[0], newHeadPos[1]);
 
-    if (vec2.distance(twXform.getPosition(), hdXform.getPosition()) > 10) {
-      twXform.setPosition(newHeadPos[0] + 10, newHeadPos[1] + 8);
-    } else {
-      twXform.setPosition(
-        twXform.getPosition()[0] + 0.078125,
-        twXform.getPosition()[1] + 0.0625
-      );
-    }
-    if (vec2.distance(bwXform.getPosition(), hdXform.getPosition()) > 10) {
-      bwXform.setPosition(newHeadPos[0] + 10, newHeadPos[1] - 8);
-    } else {
-      bwXform.setPosition(
-        bwXform.getPosition()[0] + 0.078125,
-        bwXform.getPosition()[1] - 0.0625
-      );
-    }
+    const topWingDest = [newHeadPos[0] + 10, newHeadPos[1] + 8];
+    const bottomWingDest = [newHeadPos[0] + 10, newHeadPos[1] - 8];
+    const twNewPos = [];
+    const bwNewPos = [];
+    vec2.lerp(twNewPos, twXform.getPosition(), topWingDest, 0.05);
+    twXform.setPosition(twNewPos[0], twNewPos[1]);
+
+    vec2.lerp(bwNewPos, bwXform.getPosition(), bottomWingDest, 0.05);
+    bwXform.setPosition(bwNewPos[0], bwNewPos[1]);
   }
 
   _updateBound(bound, pos, width, height) {
     bound.top.getXform().setPosition(pos[0], pos[1] + height / 2);
+    bound.top.getXform().setSize(width, 0.5);
     bound.bottom.getXform().setPosition(pos[0], pos[1] - height / 2);
+    bound.bottom.getXform().setSize(width, 0.5);
+
     bound.left.getXform().setPosition(pos[0] - width / 2, pos[1]);
     bound.right.getXform().setPosition(pos[0] + width / 2, pos[1]);
   }
