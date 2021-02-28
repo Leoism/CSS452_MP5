@@ -17,6 +17,8 @@ function Scene() {
     
     // Cameras:
     this.mMainCam = null;
+    this.mZoomCam = [];
+    this.mNumZoomCam = 4;
     
     // Hero:
     this.mHero = null;
@@ -50,6 +52,30 @@ Scene.prototype._initText = function (font, posX, posY, color, textH) {
     font.setTextHeight(textH);
 };
 
+Scene.prototype._initZoomCam = function () {
+    var deltaX = 200;
+    
+    var heroCam = new Camera(
+        vec2.fromValues(100, 75), // position of the camera
+        15,                       // width of camera
+        [deltaX * 0, 600, 200, 200]           // viewport (orgX, orgY, width, height)
+        );
+    heroCam.setBackgroundColor([0.8, 0.8, 0.8, 1]);
+    this.mZoomCam.push(heroCam);
+    
+    // Traverse the number of zoom camera
+    for (var i = 1; i < this.mNumZoomCam; i++) {
+        // set up the zoom cam
+        var cam = new Camera(
+        vec2.fromValues(100, 75), // position of the camera
+        6,                       // width of camera
+        [deltaX * i, 600, 200, 200]           // viewport (orgX, orgY, width, height)
+        );
+        cam.setBackgroundColor([0.8, 0.8, 0.8, 1]);
+        this.mZoomCam.push(cam);
+    }
+};
+
 // Performs all initialization functions
 //   => Should call gEngine.GameLoop.start(this)!
 Scene.prototype.initialize = function () {
@@ -62,6 +88,8 @@ Scene.prototype.initialize = function () {
     );
     this.mMainCam.setBackgroundColor([0.8, 0.8, 0.8, 1]);
             // sets the background to gray
+          
+    this._initZoomCam();
           
     // Hero:
     this.mHero = new Hero(this.kSprite);
@@ -114,6 +142,25 @@ Scene.prototype._checkDyePackBoundCollision = function (dyePack, patrol) {
     }        
 };
 
+Scene.prototype._zoomDyePackCam = function (dyePack) {
+    if (dyePack === null) {
+        return;
+    }
+    
+    for (var j = 1; j < this.mZoomCam.length; j++) {
+        // If Zoom cam i is not active
+        if (!this.mZoomCam[j].getIsVisible()) {
+            var x = dyePack.getXPos();
+            var y = dyePack.getYPos();
+            // Set position once
+            this.mZoomCam[j].setWCCenter(x,y);
+            this.mZoomCam[j].setFocusDyePack(dyePack);
+            this.mZoomCam[j].setIsVisible(true);
+            break;
+        }
+    }
+};
+
 // Check if the DyePack collide with head of patrol
 Scene.prototype._checkHeadPatrolCollision = function (dyePack, patrol) {
     if (dyePack === null || patrol === null) {
@@ -132,6 +179,7 @@ Scene.prototype._checkHeadPatrolCollision = function (dyePack, patrol) {
     var coord = [];
     if (window.pixelCollision(dyePackRen, dyePackBBox, patrolHeadRen, patrolHeadBBox, coord)) {
         dyePack.hitDyePack();
+        this._zoomDyePackCam(dyePack);
         patrol.hitByDyePack('head');
     }
 };
@@ -157,6 +205,7 @@ Scene.prototype._checkWingPatrolCollision = function (dyePack, patrol) {
         var coord = [];
         if (window.pixelCollision(dyePackRen, dyePackBBox, patrolTopWingRen, patrolTopWingBBox, coord)) {
             dyePack.hitDyePack();
+            this._zoomDyePackCam(dyePack);
             patrol.hitByDyePack('top');
         }
     }
@@ -165,6 +214,7 @@ Scene.prototype._checkWingPatrolCollision = function (dyePack, patrol) {
         var coord = [];
         if (window.pixelCollision(dyePackRen, dyePackBBox, patrolBottomWingRen, patrolBottomWingBBox, coord)) {
             dyePack.hitDyePack();
+            this._zoomDyePackCam(dyePack);
             patrol.hitByDyePack('bottom');
         }
     }
@@ -211,9 +261,47 @@ Scene.prototype.checkCollision = function () {
 
     // Case 2: DyePack encounter the bound of a Patrol
     this._checkDyePackCollision();
+};
+
+Scene.prototype._checkIsHeroHitted = function () {
+    if (this.mHero === null) {
+        return;
+    }
     
-    // Case 3: DyePack collide with the head of the patrol
-    // Case 4: DyePack collide with the wing of the patrol
+    if (this.mHero.getIsHitted())
+    {
+        if (!this.mZoomCam[0].getIsVisible()) {
+            this.mZoomCam[0].setIsVisible(true);
+        }
+        var center = this.mHero.getHeroPosition();
+        this.mZoomCam[0].setWCCenter(center[0], center[1]);
+    }
+    else {
+        this.mZoomCam[0].setIsVisible(false);
+    }
+};
+
+Scene.prototype._checkIsDyePackHitted = function () {    
+    for (var j = 1; j < this.mZoomCam.length; j++) {
+        // If Zoom cam i is not active
+        if (this.mZoomCam[j].getIsVisible() && this.mZoomCam[j].getFocusDyePack().getIsTerminated()) {
+            // Set position once
+            this.mZoomCam[j].setIsVisible(false);
+        }
+    }
+};
+
+Scene.prototype.updateZoomCam = function () {
+    // Check if Hero is hitted
+    this._checkIsHeroHitted();
+    
+    // Check if the DyePack is hitted
+    this._checkIsDyePackHitted();
+    
+    // Update the interpolation of the camera
+    for (var i = 0; i < this.mZoomCam.length; i++) {
+        this.mZoomCam[i].update();
+    }
 };
 
 // Call Update function on all DyePack
@@ -221,6 +309,13 @@ Scene.prototype.updateStatus = function () {
     var numPatrol = this.mPatrolSet.getPatrols().length;
     var status = "Status: DyePack (" + this.mHero.getNumDyePack() + "), Patrol (" + numPatrol + "), AutoSpawn (" + this.mPatrolSet.getIsAutoSpawn() + ")";
     this.mStatus.setText(status);
+};
+
+Scene.prototype.setZoomCamActive = function (index, isActive) {
+    if (index >= this.mZoomCam.length) {
+        return;
+    }
+    this.mZoomCam[index].setIsVisible(isActive);
 };
 
 // update function to be called form EngineCore.GameLoop
@@ -235,7 +330,25 @@ Scene.prototype.update = function () {
     
     this.checkCollision();
     
+    this.updateZoomCam();
+    
     this.updateStatus();
+    
+    this.updateZoomCam();
+};
+
+Scene.prototype.drawZoomCam = function () {
+    // Traverse the zoom cam
+    for (var i = 0; i < this.mZoomCam.length; i++) {
+        if (!this.mZoomCam[i].getIsVisible()) {
+            continue;
+        }
+        
+        this.mZoomCam[i].setupViewProjection();
+        this.mHero.draw(this.mZoomCam[i]);
+        this.mPatrolSet.draw(this.mZoomCam[i]);
+        this.mStatus.draw(this.mZoomCam[i]);
+    }
 };
 
 // draw function to be called from EngineCore.GameLoop
@@ -247,6 +360,9 @@ Scene.prototype.draw = function () {
     this.mHero.draw(this.mMainCam);
     this.mPatrolSet.draw(this.mMainCam);
     this.mStatus.draw(this.mMainCam);
+    
+    // Draw Zoom Cam
+    this.drawZoomCam();
 };
 
 // Must unload all resources

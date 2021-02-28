@@ -41,6 +41,9 @@ function Camera(wcCenter, wcWidth, viewportArray, bound) {
 
     // background color
     this.mBgColor = [0.8, 0.8, 0.8, 1]; // RGB and Alpha
+    
+    this.mIsVisible = false;
+    this.mFocusDyePack = null;
 }
 
 Camera.eViewport = Object.freeze({
@@ -62,6 +65,12 @@ Camera.prototype.setWCWidth = function (width) { this.mCameraState.setWidth(widt
 Camera.prototype.getWCWidth = function () { return this.mCameraState.getWidth(); };
 Camera.prototype.getWCHeight = function () { return this.mCameraState.getWidth() * this.mViewport[Camera.eViewport.eHeight] / this.mViewport[Camera.eViewport.eWidth]; };
                                                                                                         // viewportH/viewportW
+
+Camera.prototype.getIsVisible = function () { return this.mIsVisible; };
+Camera.prototype.setIsVisible = function (isVisible) { this.mIsVisible = isVisible; };
+
+Camera.prototype.getFocusDyePack = function () { return this.mFocusDyePack; };
+Camera.prototype.setFocusDyePack = function (dyePack) { this.mFocusDyePack = dyePack; };
 
 Camera.prototype.setViewport = function (viewportArray, bound) {
     if (bound === undefined) {

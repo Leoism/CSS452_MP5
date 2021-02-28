@@ -65,8 +65,17 @@ class Hero {
         return b;
     }
     
+    // Get is hero hitted
+    getIsHitted() {
+        return this.mIsHeroHit;
+    }
+    
     getDyePacks() {
         return this.mDyePackArr;
+    }
+    
+    getHeroPosition() {
+        return this.mObjectState.getCenter();
     }
     
     // Set the position of the Hero
@@ -87,7 +96,8 @@ class Hero {
                                                 this.mHitYAmplitude, 
                                                 this.mHitFrequency, 
                                                 this.mHitDuration);
-            this.mObjectShake.setShakeCenter(vec2.fromValues(this.mObjectState.getWidth(),this.mObjectState.getWidth()))
+            this.mObjectShake.setRefCenter(vec2.fromValues(this.mWidth,this.mHeight));
+            this.mObjectShake.setShakeCenter(vec2.fromValues(this.mWidth,this.mHeight));
             this.mIsHeroHit = true;
         }
     }
@@ -131,12 +141,12 @@ class Hero {
                 this.mIsHeroHit = false;
             }
             else {
-                this.mObjectShake.setRefCenter(vec2.fromValues(this.mObjectState.getWidth(),this.mObjectState.getWidth()));
+                this.mObjectShake.setRefCenter(vec2.fromValues(this.mWidth,this.mHeight));
                 this.mObjectShake.updateShakeState();
-                var sizeRef = this.mObjectShake.getCenter();
+                var sizeRef = this.mObjectShake.getCenter()[0];
                 var w = this.mHeroRenderable.getXform().getWidth();
-                var frac = sizeRef[0]/w;
-                this.mObjectState.setWidth(w * frac);
+                var frac = sizeRef/w;
+                this.mObjectState.setWidth(w *frac);
                 //this.mHeroRenderable.getXform().setSize(w * frac, h *frac);
             }
         }
