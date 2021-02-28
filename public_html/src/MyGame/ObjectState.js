@@ -18,8 +18,16 @@ class ObjectState {
     getWidth() { return this.mWidth.getValue(); }
     setWidth(w) { this.mWidth.setFinalValue(w); }
     
-    setCycle(c) { this.kCycles = c; }
-    setRate(r) { this.kRate = r; }
+    setCycle(c) { 
+        this.kCycles = c; 
+        this.mCenter = new InterpolateVec2(this.getCenter(), this.kCycles, this.kRate);
+        this.mWidth = new Interpolate(this.getWidth(), this.kCycles, this.kRate);
+    }
+    setRate(r) { 
+        this.kRate = r; 
+        this.mCenter = new InterpolateVec2(this.getCenter(), this.kCycles, this.kRate);
+        this.mWidth = new Interpolate(this.getWidth(), this.kCycles, this.kRate);
+    }
     
     updateObjectState() {
         this.mCenter.updateInterpolation();
