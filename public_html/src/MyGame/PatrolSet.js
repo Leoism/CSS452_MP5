@@ -7,13 +7,13 @@ class PatrolSet {
     this.patrols = [];
     this.autoSpawn = false;
   }
-  
+
   getPatrols() {
-      return this.patrols;
+    return this.patrols;
   }
-  
+
   getIsAutoSpawn() {
-      return this.autoSpawn;
+    return this.autoSpawn;
   }
 
   initialize() {
@@ -71,10 +71,10 @@ class PatrolSet {
     if (xPos == undefined || yPos == undefined) {
       yPos =
         Math.random() > 0.5
-          ? this._randomNumber(112.5, 150)
-          : this._randomNumber(0, 37.5);
+          ? this._randomNumber(112.5, 125)
+          : this._randomNumber(15, 37.5);
 
-      xPos = this._randomNumber(100, 200);
+      xPos = this._randomNumber(100, 175);
     }
     this.patrols.push(new Patrol(xPos, yPos));
   }
