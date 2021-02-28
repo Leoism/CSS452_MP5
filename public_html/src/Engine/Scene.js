@@ -250,7 +250,7 @@ Scene.prototype._zoomDyePackCam = function (dyePack) {
 
   for (var j = 1; j < this.mZoomCam.length; j++) {
     // If Zoom cam i is not active
-    if (!this.mZoomCam[j].getIsVisible()) {
+    if (!this.mZoomCam[j].getIsVisible() || this.mZoomCam[j].getFocusDyePack() === null) {
       var x = dyePack.getXPos();
       var y = dyePack.getYPos();
       // Set position once
@@ -399,14 +399,18 @@ Scene.prototype._checkIsDyePackHitted = function () {
   for (var j = 1; j < this.mZoomCam.length; j++) {
     // If Zoom cam i is not active
     var dyePack = this.mZoomCam[j].getFocusDyePack();
+    if (dyePack === null) {
+        continue;
+    }
+    
     if (
       this.mZoomCam[j].getIsVisible() &&
-      dyePack !== null &&
       // check if dyepack exists
       dyePack.getIsTerminated()
     ) {
-      // Set position once
+      // DyePack is terminated
       this.mZoomCam[j].setIsVisible(eval(`this.cam${j}Force`), false);
+      this.mZoomCam[j].setFocusDyePack(null);
     }
   }
 };
