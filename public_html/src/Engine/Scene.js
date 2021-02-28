@@ -400,13 +400,13 @@ Scene.prototype._checkIsDyePackHitted = function () {
     // If Zoom cam i is not active
     var dyePack = this.mZoomCam[j].getFocusDyePack();
     if (
-      this.mZoomCam[j].getIsVisible() && 
+      this.mZoomCam[j].getIsVisible() &&
       dyePack !== null &&
       // check if dyepack exists
       dyePack.getIsTerminated()
     ) {
       // Set position once
-      this.mZoomCam[j].setIsVisible(false);
+      this.mZoomCam[j].setIsVisible(eval(`this.cam${j}Force`), false);
     }
   }
 };
