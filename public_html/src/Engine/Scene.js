@@ -135,8 +135,6 @@ Scene.prototype.update = function () {
 
   this.checkCollision();
 
-  this.updateZoomCam();
-
   this.updateStatus();
 
   this.updateZoomCam();
@@ -400,10 +398,12 @@ Scene.prototype._checkIsHeroHitted = function () {
 Scene.prototype._checkIsDyePackHitted = function () {
   for (var j = 1; j < this.mZoomCam.length; j++) {
     // If Zoom cam i is not active
+    var dyePack = this.mZoomCam[j].getFocusDyePack();
     if (
-      this.mZoomCam[j].getIsVisible() &&
+      this.mZoomCam[j].getIsVisible() && 
+      dyePack !== null &&
       // check if dyepack exists
-      this.mZoomCam[j].getFocusDyePack()?.getIsTerminated()
+      dyePack.getIsTerminated()
     ) {
       // Set position once
       this.mZoomCam[j].setIsVisible(false);

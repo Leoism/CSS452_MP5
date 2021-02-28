@@ -180,7 +180,7 @@ class Hero {
         for (var i = 0; i < this.mDyePackArr.length; i++) {
             if (this.mDyePackArr[i] !== null) {
                 var currentSpeed = this.mDyePackArr[i].getSpeed();
-                if (currentSpeed <= 0 || this.mDyePackArr[i].getXPos() >= boundX || this.mDyePackArr[i].getIsTerminated()) {
+                if ((currentSpeed <= 0 && !this.mDyePackArr[i].getIsHit()) || this.mDyePackArr[i].getXPos() >= boundX || this.mDyePackArr[i].getIsTerminated()) {
                     this.mDyePackArr[i] = null;
                     this.mNumDyePack--;
                 }
